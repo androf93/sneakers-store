@@ -1,0 +1,519 @@
+A starter React project for an online sneaker and apparel store, built with Create React App, React Router, and a simple cart context.
+
+---
+
+## Project Structure
+```
+sneakers-store/
+├── package.json
+├── public/
+│   └── index.html
+└── src/
+    ├── index.js
+    ├── App.js
+    ├── App.css
+    ├── data/
+    │   └── products.js
+    ├── context/
+    │   └── CartContext.js
+    ├── components/
+    │   ├── Navbar.js
+    │   ├── ProductList.js
+    │   ├── ProductCard.js
+    │   └── Footer.js
+    └── pages/
+        ├── Home.js
+        ├── Shop.js
+        ├── ProductDetail.js
+        └── Cart.js
+```
+
+---
+
+### 1. `package.json` (selected dependencies)
+```json
+{
+  "name": "sneakers-store",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  }
+}
+```
+
+### 2. `public/index.html`
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>SneakerStore</title>
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <!-- You can add additional meta tags, fonts, or stylesheets here -->
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!-- The bundle will be injected here by React Scripts -->
+  </body>
+</html>
+```
+
+### 3. `src/index.js`
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { CartProvider } from './context/CartContext';
+import './App.css';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <CartProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </CartProvider>
+  </React.StrictMode>
+);
+```
+
+### 4. `src/context/CartContext.js`
+```javascript
+import React, { createContext, useState, useCallback, useMemo } from 'react';
+
+export const CartContext = createContext();
+
+export function CartProvider({ children }) {
+  const [cart, setCart] = useState([]);
+
+  const addToCart = useCallback((product) => {
+    setCart(prev => [...prev, product]);
+  }, []);
+
+  const removeFromCart = useCallback((id) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  }, []);
+
+  const value = useMemo(() => ({ cart, addToCart, removeFromCart }), [cart, addToCart, removeFromCart]);
+
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
+}
+```
+
+### 5. `src/data/products.js`
+```javascript
+export const products = [
+  { id: 1, name: 'Air Max 90', price: 120, image: '/images/airmax90.jpg' },
+  { id: 2, name: 'Jordan 1 Retro', price: 150, image: '/images/jordan1.jpg' },
+  { id: 3, name: 'Yeezy Boost 350', price: 220, image: '/images/yeezy350.jpg' },
+  { id: 4, name: 'Blazer Mid', price: 100, image: '/images/blazermid.jpg' }
+];
+```
+
+### 6. `src/App.js`
+```javascript
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Shop from './pages/Shop';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+
+function App() {
+  return (
+    <div className="app-container">
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+## Components
+
+### 7. `src/components/Navbar.js`
+```javascript
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { CartContext } from '../context/CartContext';
+
+export default function Navbar() {
+  const { cart } = useContext(CartContext);
+
+  return (
+    <nav className="navbar">
+      <h1 className="logo"><Link to="/">SneakerStore</Link></h1>
+      <ul className="nav-links">
+        <li><Link to="/shop">Shop</Link></li>
+        <li><Link to="/cart">Cart ({cart.length})</Link></li>
+      </ul>
+    </nav>
+  );
+}
+```
+
+### 8. `src/components/ProductList.js`
+```javascript
+import React from 'react';
+import ProductCard from './ProductCard';
+import { products } from '../data/products';
+
+export default function ProductList() {
+  return (
+    <div className="product-list">
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
+```
+
+### 9. `src/components/ProductCard.js`
+```javascript
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { CartContext } from '../context/CartContext';
+
+export default function ProductCard({ product }) {
+  const { addToCart } = useContext(CartContext);
+
+  return (
+    <div className="product-card">
+      <Link to={`/product/${product.id}`}>  
+        <img src={product.image} alt={product.name} />
+      </Link>
+      <h3>{product.name}</h3>
+      <p>${product.price}</p>
+      <button onClick={() => addToCart(product)}>Add to Cart</button>
+    </div>
+  );
+}
+```
+
+### 10. `src/components/Footer.js`
+```javascript
+import React from 'react';
+
+const currentYear = new Date().getFullYear();
+export default function Footer() {
+  return (
+    <footer className="footer">
+      <p>&copy; {currentYear} SneakerStore. All rights reserved.</p>
+    </footer>
+  );
+}
+```
+
+---
+
+## Pages
+
+### 11. `src/pages/Home.js`
+```javascript
+import React from 'react';
+import ProductList from '../components/ProductList';
+
+export default function Home() {
+  return (
+    <div className="home-page">
+      <h2>Welcome to SneakerStore</h2>
+      <p>Discover the latest in sneakers and streetwear.</p>
+      <ProductList />
+    </div>
+  );
+}
+```
+
+### 12. `src/pages/Shop.js`
+```javascript
+import React from 'react';
+import ProductList from '../components/ProductList';
+
+export default function Shop() {
+  return (
+    <div className="shop-page">
+      <h2>Shop All Products</h2>
+      <ProductList />
+    </div>
+  );
+}
+```
+
+### 13. `src/pages/ProductDetail.js`
+```javascript
+import React, { useContext } from 'react';
+import { useParams } from 'react-router-dom';
+import { products } from '../data/products';
+import { CartContext } from '../context/CartContext';
+
+export default function ProductDetail() {
+  const { id } = useParams();
+  const product = products.find(p => p.id === parseInt(id));
+  const { addToCart } = useContext(CartContext);
+
+  if (!product) return <p>Product not found.</p>;
+
+  return (
+    <div className="product-detail">
+      <img src={product.image} alt={product.name} />
+      <h2>{product.name}</h2>
+      <p>${product.price}</p>
+      <button onClick={() => addToCart(product)}>Add to Cart</button>
+    </div>
+  );
+}
+```
+
+### 14. `src/pages/Cart.js`
+```javascript
+import React, { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+
+export default function Cart() {
+  const { cart, removeFromCart } = useContext(CartContext);
+
+  if (cart.length === 0) return <p>Your cart is empty.</p>;
+
+  return (
+    <div className="cart-page">
+      <h2>Your Cart</h2>
+      {cart.map(item => (
+        <div key={item.id} className="cart-item">
+          <h4>{item.name}</h4>
+          <p>${item.price}</p>
+          <button onClick={() => removeFromCart(item.id)}>Remove</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### 15. `src/App.css`
+```css
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* App container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+  background: #fff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo a {
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #0070f3;
+}
+
+/* Main content */
+main {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* Footer */
+.footer {
+  background: #fff;
+  text-align: center;
+  padding: 1rem;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+}
+
+/* Product list grid */
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+/* Product card */
+.product-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.product-card h3 {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.product-card p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: auto;
+}
+
+.product-card button {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background: #0070f3;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.product-card button:hover {
+  background: #005bb5;
+}
+
+/* Pages */
+.home-page,
+.shop-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.product-detail {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.product-detail img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.product-detail h2 {
+  margin-bottom: 1rem;
+}
+
+.product-detail button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  background: #28a745;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.product-detail button:hover {
+  background: #1e7e34;
+}
+
+/* Cart */
+.cart-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cart-item {
+  background: #fff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.cart-item h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.cart-item button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #dc3545;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cart-item button:hover {
+  background: #c82333;
+}
+```
