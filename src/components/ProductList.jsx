@@ -1,13 +1,14 @@
 import React from 'react';
 import ProductCard from './ProductCard';
 import { products } from '../data/products';
+import { Container, Typography } from '@mui/material';
 
 export default function ProductList() {
 	return (
-		<div className="product-list">
+		<Container className="product-list" maxWidth="lg">
 			{products.map(product => (
 				<ProductCard key={product.id} product={product} />
 			))}
-		</div>
+		</Container>
 	);
 }

@@ -1,11 +1,14 @@
 import React from 'react';
 import ProductList from '../components/ProductList';
+import { Container, Typography } from '@mui/material';
 
 export default function Shop() {
 	return (
-		<div className="shop-page">
-			<h2>Shop All Products</h2>
+		<Container className="shop-page" maxWidth="md">
+			<Typography variant="h2" component="h1" gutterBottom>
+				Shop All Products
+			</Typography>
 			<ProductList />
-		</div>
+		</Container>
 	);
 }
