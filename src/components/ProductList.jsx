@@ -1,7 +1,7 @@
 import React from 'react';
 import ProductCard from './ProductCard';
 import { products } from '../data/products';
-import { Container, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 
 export default function ProductList() {
 	return (
